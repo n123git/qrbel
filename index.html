@@ -1,0 +1,315 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library of QRbel</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; display: flex; height: 100vh; }
+    .sidebar { width: 200px; background: #f4f4f4; border-right: 1px solid #ccc; padding: 10px; overflow-y: auto; }
+    .sidebar h2 { margin-top: 0; }
+    .sidebar ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar li { margin: 8px 0; cursor: pointer; }
+    .sidebar li:hover { background: #ddd; }
+    .main { flex: 1; overflow-y: auto; padding: 20px; position: relative; }
+    #qr-list { display: flex; flex-wrap: wrap; gap: 20px; justify-content: flex-start; }
+    .qr-item { text-align: center; }
+    .qr-item svg { width: 150px; height: 150px; }
+    .loading { text-align: center; margin: 20px; font-style: italic; display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h2>Coins</h2>
+    <ul id="coin-list"></ul>
+  </div>
+  <div class="main" id="main-container">
+    <h2 id="coin-title">Select a coin</h2>
+    <p>Notes: This generates YW2 QR codes <i>as</i> you scroll down. All my code is open source and can be found <a href="https://github.com/n123git/YWdata/">on my github</a>.</p>
+    <div id="qr-list"></div>
+    <div id="loading" class="loading">Loading...</div>
+  </div>
+  <!-- Libraries -->
+  <script src="data/crypto-js.min.js"></script>
+  <script src="data/checksum.js"></script>
+  <script src="data/jsQR.min.js"></script> <!-- jsQR -->
+  <script src="data/qrcode.min.js"></script> <!-- qrcode.js lib-->
+  <script src="data/qrcode2.min.js"></script> <!-- qrcode lib (DIFFERENT!) (unused? idr XD)-->
+  <script>
+
+    
+
+    
+        // Define valid types and variations
+    window.validTypes = { // kinda like an ID
+    // ...validTypesB, ...validTypesA,  ...validTypesC, // the spread operator is GOATED
+      "000": "Flower Excitement Coin", 
+      "001": "Flower Excitement Coin",
+      "002": "Flower Excitement Coin",
+      "003": "Flower Excitement Coin",
+      "004": "Flower Excitement Coin",
+      "005": "Flower Excitement Coin",
+      "006": "Flower Excitement Coin",
+      "007": "Flower Excitement Coin",
+      "008": "Flower Excitement Coin",
+      "009": "Flower Excitement Coin",
+      "00A": "Bird Excitement Coin",
+      "00B": "Bird Excitement Coin",
+      "00C": "Bird Excitement Coin",
+      "00D": "Bird Excitement Coin",
+      "00E": "Bird Excitement Coin",
+      "00F": "Bird Excitement Coin",
+      "00G": "Bird Excitement Coin",
+      "00H": "Bird Excitement Coin",
+      "00I": "Bird Excitement Coin",
+      "00J": "Bird Excitement Coin",
+      "00K": "Wind Excitement Coin",
+      "00L": "Wind Excitement Coin",
+      "00M": "Wind Excitement Coin",
+      "00N": "Wind Excitement Coin",
+      "00O": "Wind Excitement Coin",
+      "00P": "Wind Excitement Coin",
+      "00Q": "Wind Excitement Coin",
+      "00R": "Wind Excitement Coin",
+      "00S": "Wind Excitement Coin",
+      "00T": "Wind Excitement Coin",
+      "00U": "Moon Excitement Coin",
+      "00V": "Moon Excitement Coin",
+      "00W": "Moon Excitement Coin",
+      "00X": "Moon Excitement Coin",
+      "00Y": "Moon Excitement Coin",
+      "00Z": "Moon Excitement Coin",
+      "010": "Moon Excitement Coin",
+      "011": "Moon Excitement Coin",
+      "012": "Moon Excitement Coin",
+      "013": "Moon Excitement Coin",
+      "014": "Yo Mystery Coin",
+      "015": "Yo Mystery Coin",
+      "016": "Yo Mystery Coin",
+      "017": "Yo Mystery Coin",
+      "018": "Yo Mystery Coin",
+      "019": "Kai Mystery Coin",
+      "01A": "Kai Mystery Coin",
+      "01B": "Kai Mystery Coin",
+      "01C": "Kai Mystery Coin",
+      "01D": "Kai Mystery Coin",
+      "01E": "Sum Mystery Coin",
+      "01F": "Sum Mystery Coin",
+      "01G": "Sum Mystery Coin",
+      "01H": "Sum Mystery Coin",
+      "01I": "Sum Mystery Coin",
+      "01J": "Mon Mystery Coin",
+      "01K": "Mon Mystery Coin",
+      "5ZD": "Red Coin",
+      "030": "Pink Coin",/*
+      "033": "Red Coin",
+      "034": "Red Coin",
+      "035": "Red Coin",
+      "036": "Red Coin",
+      "037": "Red Coin",
+      "038": "Red Coin",
+      "039": "Red Coin",
+      "032": "Red Coin", // a
+      "03A": "Red Coin",
+      "03B": "Red Coin",
+      "03C": "Red Coin",
+      "03D": "Red Coin",
+      "03E": "Red Coin",
+      "03F": "Red Coin",
+      "03H": "Red Coin",
+      "03I": "Red Coin",
+      "03J": "Red Coin",
+      "03K": "Red Coin",
+      "03L": "Red Coin",
+      "03M": "Red Coin",
+      "03N": "Red Coin",
+      "03O": "Red Coin",
+      "03P": "Red Coin",
+      "03Q": "Red Coin",
+      "03R": "Red Coin",
+      "03S": "Red Coin",
+      "03T": "Red Coin",
+      "03U": "Red Coin",
+      "03V": "Red Coin",
+      "03W": "Red Coin",
+      "03X": "Red Coin",
+      "03Y": "Red Coin",
+      "03Z": "Red Coin",
+      "040": "Red Coin",
+      "IXM": "Gren Coin",*/
+      "0IL": "Red Coin",
+      "02H": "Five-Star Coin",
+      "26I": "Pink Coin",
+      "03M": "Cheerful Coin",
+      "023": "Jet Bell",
+      "05D": "Keepsake Cap",
+      "18L": "Komasan Cog",
+      "19A": "Hungramps Cog",
+      "25O": "Draggie Cog",
+      "259": "Noko Cog",
+      "25E": "Manjimutt Cog",
+      "25J": "Walkappa Cog",
+      "020": "Boo Bundle",
+      "035": "Green Coin",
+      "033": "Green Coin",
+      "038": "Blue Coin",
+      "06J": "Yellow Coin",
+      "081": "Orange Coin",
+      "09A": "Pink Coin",
+      "10J": "Green Coin",
+      "1AC": "Yellow Coin",
+      "1D0": "Yellow Coin",
+      "27C": "Green Coin",
+      "D7C": "Gren Coin",
+      "06A": "Yellow Coin",
+      "02C": "Five-Star Coin",
+      "02O": "Yellow Coin",
+      "54E": "Traveler's Coin North",
+      "54F": "Traveler's Coin North",
+      "54G": "Traveler's Coin North",
+      "54H": "Traveler's Coin North",
+      "54I": "Traveler's Coin North",
+      "54J": "Traveler's Coin North",
+      "54K": "Traveler's Coin North",
+      "54L": "Traveler's Coin North",
+      "54M": "Traveler's Coin North",
+      "54N": "Traveler's Coin North",
+      "54O": "Traveler's Coin North",
+      "54P": "Traveler's Coin North",
+      "54Q": "Traveler's Coin North",
+      "54R": "Traveler's Coin North",
+      "54X": "Traveler's Coin Northeast",
+      "55D": "Traveler's Coin East",
+      "55Q": "Traveler's Coin Central",
+      "56C": "Traveler's Coin West",
+      "56J": "Traveler's Coin Mountain",
+      "56Z": "Traveler's Coin South",
+      "57F": "Traveler's Coin Midwest",
+      "57Z": "Traveler's Coin Island",
+      "585": "Carved Bear",
+      "586": "Goldfish Lantern",
+      "587": "Master's Lantern",
+      "588": "Gold Emblem",
+      "589": "Takoyaki Tray",
+      "58A": "Dune Sand",
+      "58B": "Vintage Parasol",
+      "58C": "Terracotta Figure",
+      "58D": "Red Hibiscus",
+      "58E": "Random Color Coin",
+      "5AO": "Random Color Coin",
+      "27R": "Victory Scroll",
+      "21S": "Nyext Scroll",
+      "21N": "Nyaight Scroll",
+      "AK3": "Wonderer's Bell",
+      "F5I": "Purple Coin",
+      "GP2": "Light-Blue Coin",
+      
+      // add other type codes here*/
+    };
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+    window.coinList = ["Flower Excitement Coin", "Bird Excitement Coin", "Wind Excitement Coin", "Moon Excitement Coin",
+                       "Yo Mystery Coin", "Kai Mystery Coin", "Sum Mystery Coin", "Mon Mystery Coin", 
+                       "Five-Star Coin", "Cheerful Coin", 
+                       "Traveler's Coin North", "Traveler's Coin Northeast", "Traveler's Coin East", "Traveler's Coin Central", "Traveler's Coin West", "Traveler's Coin Mountain", "Traveler's Coin South", "Traveler's Coin Midwest", "Traveler's Coin Island",
+                       "Carved Bear", "Goldfish Lantern", "Master's Lantern", "Gold Emblem", "Takoyaki Tray", "Dune Sand", "Vintage Parasol", "Terracotta Figure", "Red Hibiscus", 
+                       "Red Coin", "Orange Coin", "Yellow Coin", "Green Coin", "Light-Blue Coin", "Blue Coin", "Pink Coin", "Purple Coin", "Random Color Coin", 
+                       "Victory Scroll", "Nyext Scroll", "Nyaight Scroll", "Wonderer's Bell", 
+                       "Boo Bundle", "Jet Bell", "Keepsake Cap", "Komasan Cog", "Hungramps Cog", "Draggie Cog", "Noko Cog"," Manjimutt Cog", "Walkappa Cog"]; // for now
+    const coinListEl = document.getElementById('coin-list');
+    const coinTitleEl = document.getElementById('coin-title');
+    const qrListEl = document.getElementById('qr-list');
+    const loadingEl = document.getElementById('loading');
+    const mainContainer = document.getElementById('main-container');
+
+    let typeList = [];
+    let currentCoin = null;
+    let loadIndex = 0;
+    let isLoading = false;
+
+    // Populate sidebar
+    window.coinList.forEach(coin => {
+      const li = document.createElement('li');
+      li.textContent = coin;
+      li.addEventListener('click', () => selectCoin(coin));
+      li.innerHTML = li.innerHTML + `<div style="margin-bottom: 15px;"></div>`; // lazily adding a gap
+      coinListEl.appendChild(li);
+    });
+
+    // Scroll listener for infinite load
+    mainContainer.addEventListener('scroll', () => {
+      if (!currentCoin || isLoading) return;
+      if (mainContainer.scrollTop + mainContainer.clientHeight >= mainContainer.scrollHeight - 100) {
+        loadMore();
+      }
+    });
+
+let usedCombos = new Set(); // Track seen combos
+
+function selectCoin(coin) {
+  currentCoin = coin;
+  typeList = Object.keys(window.validTypes).filter(k => window.validTypes[k] === coin);
+  coinTitleEl.textContent = coin;
+  qrListEl.innerHTML = '';
+  loadIndex = 0;
+  usedCombos.clear(); // Reset seen combos
+  loadMore();
+}
+
+function calculateBatchSize() {
+  const itemSize = 150 + 20; // QR size + gap
+  const cols = Math.floor(mainContainer.clientWidth / itemSize) || 1;
+  const rows = Math.floor(mainContainer.clientHeight / itemSize) || 1;
+  return cols * rows;
+}
+
+function loadMore() {
+  if (!currentCoin) return;
+  isLoading = true;
+  loadingEl.style.display = 'block';
+
+  const batchSize = calculateBatchSize();
+  let loaded = 0;
+
+  const maxCombos = 36 ** 4; // 36^4 = 1,679,616 possible combos
+
+  while (loaded < batchSize && loadIndex < typeList.length * maxCombos) {
+    const tIdx = Math.floor(loadIndex / maxCombos) % typeList.length;
+    const n = loadIndex % maxCombos;
+    loadIndex++;
+
+    const typeCode = typeList[tIdx];
+    const variation = n.toString(36).toUpperCase().padStart(4, '0');
+    const base = typeCode + variation;
+
+    if (usedCombos.has(base)) continue;
+    usedCombos.add(base);
+
+    let dataStr = generateQR(base);
+    if (dataStr.startsWith('/')) dataStr = dataStr.slice(1);
+    const url = 'n123git.iscool/' + dataStr;
+
+    const item = document.createElement('div');
+    item.className = 'qr-item';
+
+    QRCode.toString(url, { type: 'svg', errorCorrectionLevel: 'H' }, (err, svg) => {
+      if (err) console.error(err);
+      item.innerHTML = svg;
+    });
+
+    qrListEl.appendChild(item);
+    loaded++;
+  }
+
+  isLoading = false;
+  loadingEl.style.display = 'none';
+}
+
+
+  });
+  </script>
+</body>
+</html>
