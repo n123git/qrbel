@@ -37,6 +37,8 @@
   <script src="data/jsQR.min.js"></script> <!-- jsQR -->
   <script src="data/qrcode.min.js"></script> <!-- qrcode.js lib-->
   <script src="data/qrcode2.min.js"></script> <!-- qrcode lib (DIFFERENT!) (unused? idr XD)-->
+  <script src="data/types.js"></script> <!-- tes32 -->
+  <script src="data/consumable.js"></script> <!-- tes32 -->
   <script>
 
     
@@ -45,6 +47,7 @@
         // Define valid types and variations
     window.validTypes = { // kinda like an ID
     // ...validTypesB, ...validTypesA,  ...validTypesC, // the spread operator is GOATED
+    /*
       "000": "Flower Excitement Coin", 
       "001": "Flower Excitement Coin",
       "002": "Flower Excitement Coin",
@@ -104,41 +107,7 @@
       "01K": "Mon Mystery Coin",
       "5ZD": "Red Coin",
       "030": "Pink Coin",/*
-      "033": "Red Coin",
-      "034": "Red Coin",
-      "035": "Red Coin",
-      "036": "Red Coin",
-      "037": "Red Coin",
-      "038": "Red Coin",
-      "039": "Red Coin",
-      "032": "Red Coin", // a
-      "03A": "Red Coin",
-      "03B": "Red Coin",
-      "03C": "Red Coin",
-      "03D": "Red Coin",
-      "03E": "Red Coin",
-      "03F": "Red Coin",
-      "03H": "Red Coin",
-      "03I": "Red Coin",
-      "03J": "Red Coin",
-      "03K": "Red Coin",
-      "03L": "Red Coin",
-      "03M": "Red Coin",
-      "03N": "Red Coin",
-      "03O": "Red Coin",
-      "03P": "Red Coin",
-      "03Q": "Red Coin",
-      "03R": "Red Coin",
-      "03S": "Red Coin",
-      "03T": "Red Coin",
-      "03U": "Red Coin",
-      "03V": "Red Coin",
-      "03W": "Red Coin",
-      "03X": "Red Coin",
-      "03Y": "Red Coin",
-      "03Z": "Red Coin",
-      "040": "Red Coin",
-      "IXM": "Gren Coin",*/
+      "IXM": "Gren Coin",*//*
       "0IL": "Red Coin",
       "02H": "Five-Star Coin",
       "26I": "Pink Coin",
@@ -196,20 +165,33 @@
       "58A": "Dune Sand",
       "58B": "Vintage Parasol",
       "58C": "Terracotta Figure",
-      "58D": "Red Hibiscus",
-      "58E": "Random Color Coin",
-      "5AO": "Random Color Coin",
+      "58D": "Red Hibiscus",*/
+      "58E": "Random Color Coin", // manual input
+      "5AO": "Random Color Coin",/*
       "27R": "Victory Scroll",
       "21S": "Nyext Scroll",
       "21N": "Nyaight Scroll",
       "AK3": "Wonderer's Bell",
       "F5I": "Purple Coin",
-      "GP2": "Light-Blue Coin",
+      "GP2": "Light-Blue Coin", */
       
       // add other type codes here*/
     };
 
 
+     window.validTypes = autoTypes; // tes32
+
+     window.exceptions = {"58E": "Random Color Coin", // manual input lol
+      "5AO": "Random Color Coin"}
+
+         for (const key in window.validTypes) {
+      window.valid
+      if (window.validTypes.hasOwnProperty(key)) {
+        let value = window.validTypes[key];
+        value = grabConsumeName(value); // defined in the consume file
+        window.validTypes[key] = value; // update the object
+      }
+    }
   document.addEventListener('DOMContentLoaded', () => {
     window.coinList = ["Flower Excitement Coin", "Bird Excitement Coin", "Wind Excitement Coin", "Moon Excitement Coin",
                        "Yo Mystery Coin", "Kai Mystery Coin", "Sum Mystery Coin", "Mon Mystery Coin", 
@@ -224,20 +206,53 @@
     const qrListEl = document.getElementById('qr-list');
     const loadingEl = document.getElementById('loading');
     const mainContainer = document.getElementById('main-container');
-
+    window.manual = false; // manually specify tabs via coinList
     let typeList = [];
     let currentCoin = null;
     let loadIndex = 0;
     let isLoading = false;
 
-    // Populate sidebar
-    window.coinList.forEach(coin => {
+// Populate sidebar
+if (window.manual) {
+  // use a pre-determined safety list
+  window.coinList.forEach(coin => {
+    const li = document.createElement('li');
+    li.textContent = coin;
+    li.addEventListener('click', () => selectCoin(coin));
+    li.innerHTML += `<div style="margin-bottom: 15px;"></div>`; // lazily adding a gap XD
+    coinListEl.appendChild(li);
+  });
+} else {
+  // auto-detect from validTypes (keys are codes, values are coin names)
+  const seenCoins = new Set();
+  window.exceptions = window.exceptions || {};
+
+  // Add from validTypes
+  Object.entries(validTypes).forEach(([code, coinName]) => {
+    if (!seenCoins.has(coinName)) {
+      seenCoins.add(coinName);
       const li = document.createElement('li');
-      li.textContent = coin;
-      li.addEventListener('click', () => selectCoin(coin));
-      li.innerHTML = li.innerHTML + `<div style="margin-bottom: 15px;"></div>`; // lazily adding a gap
+      li.textContent = coinName;
+      li.addEventListener('click', () => selectCoin(coinName));
+      li.innerHTML += `<div style="margin-bottom: 15px;"></div>`;
       coinListEl.appendChild(li);
-    });
+    }
+  });
+
+  // Add extra exceptions not in validTypes
+  Object.entries(window.exceptions).forEach(([code, coinName]) => {
+    if (!seenCoins.has(coinName)) {
+      seenCoins.add(coinName);
+      const li = document.createElement('li');
+      li.textContent = coinName;
+      li.addEventListener('click', () => selectCoin(coinName));
+      li.innerHTML += `<div style="margin-bottom: 15px;"></div>`;
+      coinListEl.appendChild(li);
+    }
+  });
+}
+
+
 
     // Scroll listener for infinite load
     mainContainer.addEventListener('scroll', () => {
