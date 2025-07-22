@@ -4223,8 +4223,8 @@ dat32 = {
 		]
 	}
 }
-
 window.grabConsumeName = function(ID = "(???)") { // id name fallback
+  ID = String(ID) ?? "(???)"
   // make sure dat32 and the right format exists
   if (typeof dat32 === 'object' && dat32.items?.item && Array.isArray(dat32.items.item)) {
     const match = dat32.items.item.find(obj => obj._id === ID); // find the ID
